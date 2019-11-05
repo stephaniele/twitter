@@ -13,19 +13,29 @@ class HomeTableViewController: UITableViewController {
     var tweetArray = [NSDictionary]()
     var numberOfTweets: Int!
     
+    let myRefreshControl = UIRefreshControl()
+    
+    
 
     override func viewDidLoad() {
         super.viewDidLoad()
         
         // when your view loads, loads the API request
-        loadTweet()
+        loadTweets()
+        
+        // reload tweets every time someone pulls to refresh
+        myRefreshControl.addTarget(self, action: #selector(loadTweets), for: .valueChanged)
+        tableView.refreshControl = myRefreshControl
     }
     
     // Request tweets from API and load in a dictionary
-    func loadTweet(){
+    @objc func loadTweets(){
+        
+        //sets number of tweets to 20 whenever screen is refreshed
+        numberOfTweets = 20
         
         let myUrl = "https://api.twitter.com/1.1/statuses/home_timeline.json"
-        let myParams = ["count": 10]
+        let myParams = ["count": numberOfTweets]
         
         // if successful, call the requested dictionaries "tweets"
         TwitterAPICaller.client?.getDictionariesRequest(url: myUrl, parameters: myParams, success: { (tweets: [NSDictionary]) in
@@ -41,10 +51,40 @@ class HomeTableViewController: UITableViewController {
             // every time we repopulate the tweet array, reload the content
             self.tableView.reloadData()
             
+            // after reloading the tweet, stop the refreshing icon
+            self.myRefreshControl.endRefreshing()
+            
         }, failure: { (Error) in
             print("No tweets for you")
         })
         
+    }
+    
+    func loadMoreTweets(){
+        
+        let myUrl = "https://api.twitter.com/1.1/statuses/home_timeline.json"
+        numberOfTweets = numberOfTweets + 20
+        let myParams = ["count": numberOfTweets]
+        
+        // same as loadTweet
+        TwitterAPICaller.client?.getDictionariesRequest(url: myUrl, parameters: myParams, success: { (tweets: [NSDictionary]) in
+            
+            //empties tweet array before adding
+            self.tweetArray.removeAll()
+            
+            //appends requested tweets into tweet array
+            for tweet in tweets {
+                self.tweetArray.append(tweet)
+            }
+            
+            // every time we repopulate the tweet array, reload the content
+            self.tableView.reloadData()
+            
+            
+        }, failure: { (Error) in
+            print("No tweets for you")
+        })
+
     }
 
     // MARK: - Table view data source
@@ -66,6 +106,14 @@ class HomeTableViewController: UITableViewController {
         }
         
         return cell
+    }
+    
+    override func tableView(_ tableView: UITableView, willDisplay cell: UITableViewCell, forRowAt indexPath: IndexPath){
+        
+        // when user gets to the end of the page
+        if indexPath.row + 1 == tweetArray.count {
+            loadMoreTweets()
+        }
     }
     
     
