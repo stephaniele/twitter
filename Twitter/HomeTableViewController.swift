@@ -21,11 +21,16 @@ class HomeTableViewController: UITableViewController {
         super.viewDidLoad()
         
         // when your view loads, loads the API request
-        loadTweets()
+        self.loadTweets()
         
         // reload tweets every time someone pulls to refresh
         myRefreshControl.addTarget(self, action: #selector(loadTweets), for: .valueChanged)
         tableView.refreshControl = myRefreshControl
+    }
+    
+    override func viewDidAppear(_ animated: Bool) {
+        super.viewDidAppear(animated)
+        self.loadTweets()
     }
     
     // Request tweets from API and load in a dictionary
