@@ -1,10 +1,8 @@
-# Project 3 - *Twitter*
 
-# Twitter - Part II
+
+# Mock Twitter 
 
 This is a basic twitter app to view, compose, favorite, and retweet tweets.
-
-Time spent: **12** hours spent in total
 
 ## User Stories
 
